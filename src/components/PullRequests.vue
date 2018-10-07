@@ -59,18 +59,17 @@ export default {
     getPullRequests: async function () {
       var r = await dataservice.pullrequests()
       var table = r.map((tr) => {
-
         var pr = tr.pull_request || {
           created_at: new Date(),
-          url: "...",
-          name: "name",
-          number: "-",
-          state: "open",
-          title: "-"
+          url: '...',
+          name: 'name',
+          number: '-',
+          state: 'open',
+          title: '-'
         }
 
         return {
-          _rowVariant: pr.state==='open' ? 'success' : 'danger',
+          _rowVariant: pr.state === 'open' ? 'success' : 'danger',
           date: pr.created_at,
           url: pr.url,
           repository: tr.repository ? tr.repository.name : 'name',
