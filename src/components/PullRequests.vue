@@ -11,7 +11,6 @@
        {{ row.detailsShowing ? 'Hide' : 'Show'}} Details
       </b-button>
     </template>
-
     <template slot="row-details" slot-scope="row">
       <b-card>
         <b-row class="mb-2">
@@ -20,7 +19,10 @@
         </b-row>
         <b-row class="mb-2">
           <b-col sm="3" class="text-sm-right"><b>Url:</b></b-col>
-          <b-col><a :href="`${row.item.url}`">{{ row.item.url }}</a></b-col>
+          <b-col><a :href="`${row.item.url}`">{{ row.item.url }}</a>
+                <br/><a :href="`${row.item.diff_url}`">{{ row.item.diff_url }}</a>
+                <br/><a :href="`${row.item.patch_url}`">{{ row.item.patch_url }}</a>
+          </b-col>
         </b-row>
         <b-row class="mb-2">
           <b-col sm="3" class="text-sm-right"><b>State:</b></b-col>
@@ -29,6 +31,14 @@
         <b-row class="mb-2">
           <b-col sm="3" class="text-sm-right"><b>Number:</b></b-col>
           <b-col>{{ row.item.number }}</b-col>
+        </b-row>
+        <b-row class="mb-2">
+          <b-col sm="3" class="text-sm-right"><b>Commits:</b></b-col>
+          <b-col>{{ row.item.commits}}</b-col>
+        </b-row>
+        <b-row class="mb-2">
+          <b-col sm="3" class="text-sm-right"><b>Files Changed:</b></b-col>
+          <b-col>{{ row.item.fileschanged}}</b-col>
         </b-row>
       </b-card>
     </template>
@@ -47,9 +57,15 @@ export default {
   data () {
     return {
       pullrequests: [],
-      sortBy: 'startdate',
+      sortBy: 'createddate',
       sortDesc: true,
-      fields: [ 'repository', 'title', 'sender', 'when', 'show_details' ]
+      fields: [
+        { key: 'repository', sortable: true },
+        { key: 'title', sortable: true },
+        { key: 'sender', sortable: true },
+        { key: 'when', sortable: true },
+        {key: 'show_details', sortable: false}
+      ]
     }
   },
   created () {
@@ -70,12 +86,17 @@ export default {
 
         return {
           _rowVariant: pr.state === 'open' ? 'success' : 'danger',
-          date: pr.created_at,
-          url: pr.url,
+          createddate: new Date(pr.created_at).valueOf(),
+          updateddate: moment(pr.updated_at).fromNow(),
+          url: pr.html_url,
+          diff_url: pr.diff_url,
+          patch_url: pr.patch_url,
           repository: tr.repository ? tr.repository.name : 'name',
           number: pr.number,
           state: pr.state,
           title: pr.title,
+          commits: pr.commits,
+          fileschanged: pr.changed_files,
           sender: tr.sender ? tr.sender.login : 'user',
           when: moment(pr.created_at).fromNow()
         }
