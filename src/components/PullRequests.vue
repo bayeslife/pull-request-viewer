@@ -2,6 +2,12 @@
   <div >
     <h1>Pull Requests</h1>
 
+    <b-form-input id="type-range" type="range" step="10" min="10" max="100" v-model="count" @change="update"></b-form-input>
+
+    <b-form-checkbox v-model="openclosed" @change="update">
+      Just Open and Closed
+    </b-form-checkbox>
+
     <b-table :items="pullrequests" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc">
     <template slot="project" slot-scope="data">
       <a :href="`${data.item.url}`" >{{data.item.repository}} </a>
@@ -56,11 +62,14 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
+      openclosed: false,
+      count: 20,
       pullrequests: [],
       sortBy: 'createddate',
       sortDesc: true,
       fields: [
         { key: 'repository', sortable: true },
+        { key: 'action', sortable: true },
         { key: 'title', sortable: true },
         { key: 'sender', sortable: true },
         { key: 'when', sortable: true },
@@ -72,8 +81,17 @@ export default {
     this.getPullRequests()
   },
   methods: {
+    update: function (event) {
+      this.getPullRequests()
+    },
     getPullRequests: async function () {
-      var r = await dataservice.pullrequests()
+      var r = await dataservice.pullrequests(this.count)
+      if (this.openclosed) {
+        r = r.filter((pr) => {
+          return pr.action === 'opened' || pr.action === 'closed'
+        })
+      }
+
       var table = r.map((tr) => {
         var pr = tr.pull_request || {
           created_at: new Date(),
@@ -93,6 +111,7 @@ export default {
           patch_url: pr.patch_url,
           repository: tr.repository ? tr.repository.name : 'name',
           number: pr.number,
+          action: tr.action,
           state: pr.state,
           title: pr.title,
           commits: pr.commits,
